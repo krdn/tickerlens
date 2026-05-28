@@ -40,16 +40,25 @@ console.log(result.perspectives.value.long); // Result<PerspectiveResult>
 
 ### 실측 호환성 매트릭스
 
-`v0.1.0` 시점에 `examples/analyze-aapl.ts`로 lite 모드(4 호출, mock AAPL snapshot) 검증한 결과입니다.
+`v0.1.0` 시점에 `examples/analyze-aapl.ts`로 mock AAPL snapshot 기준 검증한 결과입니다.
 
-| 프로바이더 | 모델 (테스트) | 결과 | 비고 |
-|---|---|---|---|
-| **xai** | `grok-3-mini` | ✅ 12/12 슬롯 완료, 22초 | 가장 안정적. structured output 빠르고 정확. |
-| **anthropic** | `claude-sonnet-4-6` | 미검증 (키 부재) | llm-gateway가 native structured output 지원. 권장 production 선택지. |
-| **gemini** | `gemini-2.5-flash` | 미검증 (키 부재) | structured output 지원. 비용 효율 좋음. |
-| **openai** | `gpt-4.1-mini` | ⚠️ Strict mode 거부 (해결됨) | OpenAI는 모든 properties를 `required`로 강제. tickerlens v0.1.0+는 `.nullable()` 패턴으로 해결. |
-| **deepseek** | `deepseek-chat` | ❌ `response_format type unavailable` | DeepSeek API는 현재 `json_schema` response_format을 거부합니다. `tickerlens`에서 사용 불가. |
-| **openrouter** | `openai/gpt-4.1-mini` | 미검증 | json-mode 경로. 통과 가능성 높음. |
+| 프로바이더 | 모델 (테스트) | lite (4 호출) | full (12 호출) | 비고 |
+|---|---|---|---|---|
+| **xai** | `grok-3-mini` | ✅ 12/12, 22초 | ✅ 12/12, 30초 | 가장 안정적. structured output 빠르고 정확. |
+| **anthropic** | `claude-sonnet-4-6` | 미검증 (키 부재) | 미검증 | llm-gateway native structured output 지원. 권장 production 선택지. |
+| **gemini** | `gemini-2.5-flash` | 미검증 (키 부재) | 미검증 | structured output 지원. 비용 효율 좋음. |
+| **openai** | `gpt-4.1-mini` | ⚠️ Strict mode 거부 (해결됨) | 미검증 | OpenAI는 모든 properties를 `required`로 강제. tickerlens v0.1.0+는 `.nullable()` 패턴으로 해결. |
+| **deepseek** | `deepseek-chat` | ❌ `response_format type unavailable` | ❌ | DeepSeek API는 현재 `json_schema` response_format을 거부합니다. `tickerlens`에서 사용 불가. |
+| **openrouter** | `openai/gpt-4.1-mini` | 미검증 | 미검증 | json-mode 경로. 통과 가능성 높음. |
+
+### lite vs full — 어느 쪽을 쓸까
+
+같은 mock AAPL · xAI grok-3-mini 실측에서 발견한 점:
+
+- **시간 격차는 작다**: lite 22초 vs full 30초. fan-out이 병렬화돼 12 호출이 4 호출보다 1.4× 시간만 더 소모.
+- **정밀도 격차는 의미있다**: full에서 같은 페르소나가 시간축마다 명확히 다른 데이터 출처를 참조합니다. 예: options 페르소나의 long은 "durable moat, services TAM, AI/health innovation"(fundamentals 어휘)을, short는 "IV rank 69, P/C ratio, 195-200 strike open interest"(옵션·기술 어휘)를 인용. lite에서는 한 호출이 세 horizon을 모두 다루기 때문에 데이터 우선순위가 섞이는 경향.
+- **`null` 반환 거동 검증**: full의 options.long은 schema 약속대로 `suggestedStructure: null` 반환 — 장기 옵션 구조 추천이 의미 없는 horizon임을 LLM이 정확히 인지. `.nullable()` 패턴이 의도대로 LLM-스키마 협상에 작동.
+- **권장**: production이라면 full. lite는 비용 차이가 무의미한 1회성 사용에서는 굳이 쓸 필요 없으며, **수십~수백 종목 배치 스크리닝에서만 의미가 큽니다**.
 
 ### 권장 선택
 
