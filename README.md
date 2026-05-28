@@ -99,6 +99,12 @@ const result = await composeTickerAnalysis('AAPL', {
 @krdn/tickerlens/prompts     # System prompts + user prompt builders
 ```
 
+## More
+
+- [`docs/consumer-guide.md`](./docs/consumer-guide.md) — provider compatibility matrix (verified live), per-module routing recipes, debugging guide, auto-update workflow for consumer repos.
+- [`CLAUDE.md`](./CLAUDE.md) — architecture and design decisions.
+- [`CONTEXT.md`](./CONTEXT.md) — domain vocabulary.
+
 ## Disclaimer
 
 This library produces algorithmic analyses for research and educational use. Nothing it emits is investment advice. Always do your own due diligence and consider regulatory restrictions in your jurisdiction.
