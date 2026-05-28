@@ -1,0 +1,63 @@
+name: Publish & Notify Consumers
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test
+      - run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # Uncomment and populate matrix.repo as consumer projects come online.
+  # Mirrors the @krdn/llm-gateway notify-consumers pattern so consumer repos
+  # auto-receive a PR via the .github/workflows/update-tickerlens.yml driver
+  # documented in docs/consumer-guide.md.
+  #
+  # The release tag is bound to RELEASE_TAG and passed via env to keep it out
+  # of YAML interpolation paths that could otherwise be abused — release
+  # events are only triggerable by repo maintainers, but the env-var pattern
+  # keeps us aligned with hardened-action conventions.
+  #
+  # notify-consumers:
+  #   needs: publish
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       repo:
+  #         - krdn/your-consumer-app
+  #   env:
+  #     RELEASE_TAG: ${{ github.event.release.tag_name }}
+  #   steps:
+  #     - name: Build client payload
+  #       id: payload
+  #       run: |
+  #         printf '%s\n' "json={\"version\":\"${RELEASE_TAG}\",\"npm_version\":\"${RELEASE_TAG}\"}" >> "$GITHUB_OUTPUT"
+  #     - name: Dispatch update event
+  #       uses: peter-evans/repository-dispatch@v3
+  #       with:
+  #         token: ${{ secrets.CONSUMER_DISPATCH_TOKEN }}
+  #         repository: ${{ matrix.repo }}
+  #         event-type: tickerlens-updated
+  #         client-payload: ${{ steps.payload.outputs.json }}
