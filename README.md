@@ -102,6 +102,7 @@ const result = await composeTickerAnalysis('AAPL', {
 ## More
 
 - [`docs/consumer-guide.md`](./docs/consumer-guide.md) — provider compatibility matrix (verified live), per-module routing recipes, debugging guide, auto-update workflow for consumer repos.
+- [`docs/ai-domain-knowledge.md`](./docs/ai-domain-knowledge.md) — domain model, data semantics, LLM collaboration rules, extension checklist for AI agents working inside this library.
 - [`CLAUDE.md`](./CLAUDE.md) — architecture and design decisions.
 - [`CONTEXT.md`](./CONTEXT.md) — domain vocabulary.
 
