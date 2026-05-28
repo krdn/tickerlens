@@ -1,0 +1,88 @@
+{
+  "name": "@krdn/tickerlens",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Multi-perspective US stock ticker analysis library — fans out across Value/Growth/Quant/Options personas and Long/Mid/Short timeframes, with normalized yfinance snapshots, Zod-validated LLM analyses, and llm-gateway integration.",
+  "license": "MIT",
+  "author": "krdn",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krdn/tickerlens.git"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./data": {
+      "types": "./dist/data/index.d.ts",
+      "import": "./dist/data/index.js"
+    },
+    "./analysts": {
+      "types": "./dist/analysts/index.d.ts",
+      "import": "./dist/analysts/index.js"
+    },
+    "./schemas": {
+      "types": "./dist/schemas/index.d.ts",
+      "import": "./dist/schemas/index.js"
+    },
+    "./prompts": {
+      "types": "./dist/prompts/index.d.ts",
+      "import": "./dist/prompts/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "prepack": "pnpm build",
+    "prepublishOnly": "pnpm build && pnpm test"
+  },
+  "dependencies": {
+    "yahoo-finance2": "^2.13.3",
+    "zod": "^3.24.1"
+  },
+  "peerDependencies": {
+    "@krdn/llm-gateway": "^3.0.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@krdn/llm-gateway": "^3.3.0",
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "stock",
+    "ticker",
+    "finance",
+    "analysis",
+    "llm",
+    "ai",
+    "yfinance",
+    "fundamentals",
+    "technical-analysis",
+    "options",
+    "value-investing",
+    "growth-investing"
+  ]
+}
