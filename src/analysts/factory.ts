@@ -22,8 +22,9 @@ export interface ModuleFactoryInput<TResult> {
 
 /**
  * Create an AnalysisModule whose name maps to the consumer's ModelConfigAdapter
- * entry (provider/model/apiKey). Provider/model fields here are placeholders;
- * runModule resolves the real config via the adapter.
+ * entry (provider/model/apiKey). The provider/model fields here are placeholders
+ * that satisfy the AnalysisModule type but are never read: runModule resolves the
+ * real config via configAdapter.resolve(module.name), which keys off the name only.
  */
 export function createAnalystModule<TResult>(
   input: ModuleFactoryInput<TResult>,
@@ -31,8 +32,8 @@ export function createAnalystModule<TResult>(
   return {
     name: input.name,
     displayName: input.displayName,
-    provider: "anthropic", // overridden by ModelConfigAdapter at runtime
-    model: "claude-sonnet-4-6", // overridden by ModelConfigAdapter at runtime
+    provider: "anthropic", // placeholder — ignored at runtime (resolved by module name)
+    model: "claude-sonnet-4-6", // placeholder — ignored at runtime (resolved by module name)
     schema: input.schema,
     buildPrompt(snapshot: TickerSnapshot): string {
       return buildUserPrompt({
