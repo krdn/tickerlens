@@ -1,10 +1,14 @@
 // Yahoo Finance adapter — default DataSourceAdapter implementation.
 //
-// Wraps `yahoo-finance2` v2 and maps its responses into the provider-agnostic
+// Wraps `yahoo-finance2` v3 and maps its responses into the provider-agnostic
 // `RawTickerData` shape. All field absences are surfaced as null (never throw)
 // so the downstream snapshot layer can decide whether to warn or skip.
+//
+// v3 default export is the `YahooFinance` class (v2 was a singleton instance).
+// We instantiate once inside createYahooAdapter() — not at module top-level —
+// so the cookie/crumb fetch cost is paid per-adapter, not on import.
 
-import yahooFinance from "yahoo-finance2";
+import YahooFinance from "yahoo-finance2";
 import type {
   DailyBar,
   DataSourceAdapter,
@@ -32,13 +36,11 @@ export function createYahooAdapter(
   const newsLimit = options.newsLimit ?? 8;
   const fetchOptions = options.fetchOptions ?? true;
 
-  // Quiet down the v2 deprecation banner — consumers will read CHANGELOG when
-  // we migrate to v3.
-  try {
-    yahooFinance.suppressNotices(["yahooSurvey", "ripHistorical"]);
-  } catch {
-    // older versions may not expose this; safe to ignore
-  }
+  // v3: suppressNotices moves from a method to a constructor option. Instantiate
+  // here (not at module top-level) so cookie/crumb setup is lazy per-adapter.
+  const yahooFinance = new YahooFinance({
+    suppressNotices: ["yahooSurvey", "ripHistorical"],
+  });
 
   return {
     name: "yahoo",
@@ -61,8 +63,10 @@ export function createYahooAdapter(
           period2: new Date(),
           interval: "1d",
         }),
-        fetchOptions ? safeOptions(upper) : Promise.resolve(undefined),
-        safeRecommendations(upper),
+        fetchOptions
+          ? safeOptions(yahooFinance, upper)
+          : Promise.resolve(undefined),
+        safeRecommendations(yahooFinance, upper),
         yahooFinance.search(upper, {
           newsCount: newsLimit,
           quotesCount: 0,
@@ -167,6 +171,7 @@ function mapBars(history: any[]): DailyBar[] {
 }
 
 async function safeOptions(
+  yahooFinance: InstanceType<typeof YahooFinance>,
   ticker: string,
 ): Promise<RawTickerData["options"] | undefined> {
   try {
@@ -221,6 +226,7 @@ function mapContracts(
 }
 
 async function safeRecommendations(
+  yahooFinance: InstanceType<typeof YahooFinance>,
   ticker: string,
 ): Promise<RawRecommendations> {
   try {
