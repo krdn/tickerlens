@@ -49,7 +49,7 @@ import { optionsShort } from "../analysts/options/short.js";
 import { optionsLite } from "../analysts/options/lite.js";
 
 import { resolveContext } from "./resolveContext.js";
-import { safeFrame, skipped } from "./safeFrame.js";
+import { safeFrame } from "./safeFrame.js";
 
 export type ComposeDepth = "full" | "lite";
 
@@ -120,19 +120,6 @@ async function runFullFanOut(
   for (const p of personas) {
     for (const tf of timeframes) {
       const module = grid[p][tf];
-      if (p === "options" && !snapshot.options) {
-        tasks.push({
-          persona: p,
-          timeframe: tf,
-          promise: Promise.resolve(
-            skipped<PerspectiveResult>(
-              `${p}/${tf}`,
-              "options chain unavailable",
-            ),
-          ),
-        });
-        continue;
-      }
       tasks.push({
         persona: p,
         timeframe: tf,
@@ -177,12 +164,6 @@ async function runLiteFanOut(
   ];
 
   const tasks = personas.map(async ({ name, module }) => {
-    if (name === "options" && !snapshot.options) {
-      return {
-        name,
-        slots: makeAllSkipped(name, "options chain unavailable"),
-      };
-    }
     const result = await runLiteOne(module, snapshot, configAdapter, `${name}/lite`);
     if (!result.ok) {
       return { name, slots: makeAllFailed(result.error) };
@@ -212,14 +193,6 @@ function explodeLite(lite: LitePersonaResult): PersonaSlots {
     long: { ok: true, value: lite.long },
     mid: { ok: true, value: lite.mid },
     short: { ok: true, value: lite.short },
-  };
-}
-
-function makeAllSkipped(label: string, reason: string): PersonaSlots {
-  return {
-    long: skipped<PerspectiveResult>(`${label}/long`, reason),
-    mid: skipped<PerspectiveResult>(`${label}/mid`, reason),
-    short: skipped<PerspectiveResult>(`${label}/short`, reason),
   };
 }
 
