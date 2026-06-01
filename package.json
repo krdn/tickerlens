@@ -1,6 +1,6 @@
 {
   "name": "@krdn/tickerlens",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "type": "module",
   "description": "Multi-perspective US stock ticker analysis library — fans out across Value/Growth/Quant/Options personas and Long/Mid/Short timeframes, with normalized yfinance snapshots, Zod-validated LLM analyses, and llm-gateway integration.",
   "license": "MIT",
