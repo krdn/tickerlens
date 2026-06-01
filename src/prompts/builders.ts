@@ -20,6 +20,13 @@ export function buildUserPrompt(input: BuildUserPromptInput): string {
   const slice = personaSlice(snapshot, persona);
   const brief = timeframeBrief(timeframe);
 
+  const optionsDisclaimer =
+    persona === "options" && !snapshot.options
+      ? "No options-chain data is available for this ticker. Infer a volatility " +
+        "regime from price action and technical indicators, and state in the " +
+        "thesis that this is an estimate based on price volatility."
+      : null;
+
   return [
     `Ticker: ${snapshot.ticker}`,
     `As of: ${snapshot.asOf}`,
@@ -34,8 +41,13 @@ export function buildUserPrompt(input: BuildUserPromptInput): string {
     snapshot.warnings.length > 0
       ? `Known data gaps: ${snapshot.warnings.join("; ")}`
       : "No known data gaps.",
+    ...(optionsDisclaimer ? ["", optionsDisclaimer] : []),
     "",
     `Now produce the JSON object that matches the response schema for a ${persona} analyst at the ${timeframe} timeframe.`,
+    "",
+    "Write all free-text fields (thesis, evidence values, risks, catalysts, " +
+      "suggestedStructure) in Korean (한국어). Keep enum/machine values " +
+      "(signal, ivRegime, trend) exactly as defined by the schema in English.",
   ].join("\n");
 }
 
@@ -71,10 +83,18 @@ function personaSlice(snapshot: TickerSnapshot, persona: PersonaName) {
         indicators: snapshot.indicators,
       };
     case "options":
-      return {
-        ...base,
-        indicators: { ivRank: snapshot.indicators.ivRank },
-        options: snapshot.options,
-      };
+      // With a chain, ivRank + chain is enough. Without one (e.g. Korean
+      // stocks), include the full technical-indicator set so the analyst can
+      // infer a volatility regime from price action instead of empty data.
+      return snapshot.options
+        ? {
+            ...base,
+            indicators: { ivRank: snapshot.indicators.ivRank },
+            options: snapshot.options,
+          }
+        : {
+            ...base,
+            indicators: snapshot.indicators,
+          };
   }
 }

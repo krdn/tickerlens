@@ -159,20 +159,18 @@ describe("composeTickerAnalysis", () => {
     }
   });
 
-  it("skips the options persona (3 slots) when options chain is absent", async () => {
+  it("still analyzes the options persona when options chain is absent", async () => {
     const result = await composeTickerAnalysis("FAKE", {
       configAdapter: stubConfigAdapter,
       dataAdapter: mockAdapter(mockRaw(false)),
       depth: "full",
     });
-    expect(result.meta.completed).toBe(9);
-    expect(result.meta.failed).toBe(3);
+    // No options chain → no skip. Options persona runs the LLM like the others,
+    // inferring volatility from price/indicators. All 12 slots complete.
+    expect(result.meta.completed).toBe(12);
+    expect(result.meta.failed).toBe(0);
     for (const tf of ["long", "mid", "short"] as const) {
-      const slot = result.perspectives.options[tf];
-      expect(slot.ok).toBe(false);
-      if (!slot.ok) {
-        expect(slot.error.code).toBe("ANALYSIS_SKIPPED");
-      }
+      expect(result.perspectives.options[tf].ok).toBe(true);
     }
   });
 
