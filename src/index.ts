@@ -10,7 +10,28 @@
 // Sub-path exports under `/data`, `/analysts`, `/schemas`, `/prompts` carry the
 // concrete implementations so consumers tree-shake what they don't use.
 
-export type * from "./types.js";
+// 명시 named re-export — `export type *` 는 tsup(dts) 번들 시 툴체인 버전에 따라
+// 비결정적으로 누락될 수 있어(소비자 CI 에서 TS2305), public 타입을 명시 나열한다.
+export type {
+  Result,
+  TickerlensError,
+  PriceSnapshot,
+  FundamentalsSnapshot,
+  IndicatorsSnapshot,
+  OptionStrike,
+  OptionsSnapshot,
+  RecommendationsSnapshot,
+  NewsItem,
+  TickerSnapshot,
+  Signal,
+  Evidence,
+  PerspectiveResult,
+  Persona,
+  Timeframe,
+  PerspectiveSlot,
+  PersonaSlots,
+  AnalysisResult,
+} from "./types.js";
 
 export { composeTickerAnalysis } from "./compose/tickerAnalysis.js";
 export type {

@@ -1,6 +1,6 @@
 {
   "name": "@krdn/tickerlens",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "description": "Multi-perspective US stock ticker analysis library — fans out across Value/Growth/Quant/Options personas and Long/Mid/Short timeframes, with normalized yfinance snapshots, Zod-validated LLM analyses, and llm-gateway integration.",
   "license": "MIT",
@@ -63,9 +63,9 @@
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
-    "tsup": "^8.5.1",
+    "tsup": "8.5.1",
     "tsx": "^4.19.2",
-    "typescript": "^5.6.0",
+    "typescript": "5.9.3",
     "vitest": "^3.0.0"
   },
   "engines": {
